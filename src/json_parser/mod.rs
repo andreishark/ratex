@@ -17,6 +17,7 @@ pub fn get_exec_path(file_path: &str) -> Result<path::PathBuf, io::Error> {
 pub fn parse_json_file(
     file_path: &str,
     template_name: &str,
+    default_repo: &str,
 ) -> Result<models::ConfigModel, io::Error> {
     let mut json_path = env::current_exe()?;
     json_path.pop();
@@ -34,7 +35,7 @@ pub fn parse_json_file(
         let serialize = serde_json::to_string(&config_model)?;
         match json_file.write_all(serialize.as_bytes()) {
             Ok(_) => {}
-            Err(err) => {
+            Err(_) => {
                 let mut file = fs::File::create(&json_path)?;
                 file.write_all(serialize.as_bytes())?;
             }
