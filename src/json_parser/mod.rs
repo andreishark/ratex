@@ -31,7 +31,7 @@ pub fn parse_json_file(
 
     if !config_model.first_run {
         let mut json_file = fs::File::open(&json_path)?;
-        config_model.first_init(template_name)?;
+        config_model.first_init(template_name, default_repo)?;
         let serialize = serde_json::to_string(&config_model)?;
         match json_file.write_all(serialize.as_bytes()) {
             Ok(_) => {}

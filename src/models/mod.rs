@@ -17,6 +17,7 @@ impl Clone for ConfigModel {
         Self {
             first_run: self.first_run,
             template_path: self.template_path.clone(),
+            repo_path: self.repo_path.clone(),
         }
     }
 }
