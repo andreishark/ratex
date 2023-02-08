@@ -21,11 +21,7 @@ fn update_json_file(
     let serialize = serde_json::to_string_pretty(&config_model)?;
     let mut json_file;
 
-    if fs::metadata(json_path).is_err() {
-        json_file = fs::File::create(json_path)?;
-    } else {
-        json_file = fs::File::open(json_path)?;
-    }
+    json_file = fs::File::create(&json_path)?;
 
     json_file.write_all(serialize.as_bytes())?;
 
@@ -90,7 +86,23 @@ pub fn parse_json_file(
             .is_empty()
     {
         dbg!("Template path is empty, updating json file");
-        config_model = models::ConfigModel::new(template_name, false, &config_model.repo_path);
+        let new_template_path = get_exec_path(template_name)?;
+        match fs::create_dir(&file_path) {
+            Ok(_) => {}
+            Err(err) => {
+                if (err.kind() == io::ErrorKind::AlreadyExists) {
+                    dbg!("Template directory already exists");
+                } else {
+                    return Err(err);
+                }
+            }
+        };
+
+        config_model = models::ConfigModel::new(
+            new_template_path.to_str().expect("Unexpected error"),
+            true,
+            &config_model.repo_path,
+        );
 
         changed = true;
     }
