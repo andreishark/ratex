@@ -1,5 +1,4 @@
 use crate::json_parser;
-use std::io::Error;
 use std::{fs, io, path};
 
 extern crate serde;
@@ -23,9 +22,9 @@ impl Clone for ConfigModel {
 }
 
 impl ConfigModel {
-    pub fn new(template_path: String, first_run: bool, repo_path: &str) -> ConfigModel {
+    pub fn new(template_path: &str, first_run: bool, repo_path: &str) -> ConfigModel {
         ConfigModel {
-            first_run: false,
+            first_run: first_run,
             template_path: path::PathBuf::from(template_path),
             repo_path: repo_path.to_string(),
         }

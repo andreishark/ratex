@@ -14,24 +14,33 @@ pub fn get_exec_path(file_path: &str) -> Result<path::PathBuf, io::Error> {
     Ok(json_path)
 }
 
+fn update_json_file(
+    config_model: &models::ConfigModel,
+    json_path: &path::Path,
+) -> Result<(), io::Error> {
+    let serialize = serde_json::to_string_pretty(&config_model)?;
+    let mut json_file;
+
+    if fs::metadata(json_path).is_err() {
+        json_file = fs::File::create(json_path)?;
+    } else {
+        json_file = fs::File::open(json_path)?;
+    }
+
+    json_file.write_all(serialize.as_bytes())?;
+
+    Ok(())
+}
+
 fn init_json_file(
     json_path: &path::Path,
     template_name: &str,
     default_repo: &str,
 ) -> Result<models::ConfigModel, io::Error> {
-    let mut config_model = models::ConfigModel::new(template_name.to_string(), true, default_repo);
+    let mut config_model = models::ConfigModel::new(&template_name.to_owned(), true, default_repo);
     config_model.first_init(template_name, default_repo)?;
 
-    let mut json_file = fs::File::create(json_path)?;
-    let serialize = serde_json::to_string_pretty(&config_model)?;
-
-    match json_file.write_all(serialize.as_bytes()) {
-        Ok(_) => {}
-        Err(_) => {
-            let mut file = fs::File::create(json_path)?;
-            file.write_all(serialize.as_bytes())?;
-        }
-    };
+    update_json_file(&config_model, json_path)?;
 
     Ok(config_model)
 }
@@ -57,6 +66,61 @@ pub fn parse_json_file(
     let reader = io::BufReader::new(json_file);
 
     let mut config_model: models::ConfigModel = serde_json::from_reader(reader)?;
+    let mut changed: bool = false;
+
+    if config_model.repo_path.is_empty() {
+        dbg!("Repo path is empty, updating json file");
+        config_model = models::ConfigModel::new(
+            config_model
+                .template_path
+                .to_str()
+                .expect("Unexpected error occured"),
+            config_model.first_run,
+            default_repo,
+        );
+
+        changed = true;
+    }
+
+    if config_model.template_path.to_str().is_none()
+        || config_model
+            .template_path
+            .to_str()
+            .expect("Unexpected error")
+            .is_empty()
+    {
+        dbg!("Template path is empty, updating json file");
+        config_model = models::ConfigModel::new(template_name, false, &config_model.repo_path);
+
+        changed = true;
+    }
+
+    if config_model.first_run {
+        dbg!("First run, updating json file");
+        config_model = models::ConfigModel::new(
+            config_model
+                .template_path
+                .to_str()
+                .expect("Unexpected error occured"),
+            true,
+            &config_model.repo_path,
+        );
+
+        init_json_file(
+            &json_path,
+            config_model
+                .template_path
+                .to_str()
+                .expect("Unexpected error"),
+            &config_model.repo_path,
+        )?;
+
+        return Ok(config_model);
+    }
+
+    if changed {
+        update_json_file(&config_model, &json_path)?;
+    }
 
     Ok(config_model)
 }
