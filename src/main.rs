@@ -21,9 +21,10 @@ impl fmt::Display for RatexError {
 
 static CONFIG_JSON_NAME: &str = "config.json";
 static TEMPLATE_DIR_NAME: &str = "templates";
-static DEFAULT_REPO_PATH: &str = "https://github.com/andreishark/ratex/tree/master/templates";
+static DEFAULT_REPO_PATH: &str =
+    "https://github.com/andreishark/ratex/tree/dev_andreishark/templates";
 
-fn run() -> Result<(), io::Error> {
+fn run() -> Result<(), RatexError> {
     let config_model =
         json_parser::parse_json_file(CONFIG_JSON_NAME, TEMPLATE_DIR_NAME, DEFAULT_REPO_PATH)?;
     dbg!("Json file content", &config_model);
@@ -33,6 +34,6 @@ fn run() -> Result<(), io::Error> {
     Ok(())
 }
 
-fn main() -> Result<(), io::Error> {
+fn main() -> Result<(), RatexError> {
     run()
 }
