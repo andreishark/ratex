@@ -9,6 +9,7 @@ pub struct ConfigModel {
     pub first_run: bool,
     pub template_path: path::PathBuf,
     pub repo_path: String,
+    pub templates_name: Vec<String>,
 }
 
 impl Clone for ConfigModel {
@@ -17,16 +18,23 @@ impl Clone for ConfigModel {
             first_run: self.first_run,
             template_path: self.template_path.clone(),
             repo_path: self.repo_path.clone(),
+            templates_name: self.templates_name.clone(),
         }
     }
 }
 
 impl ConfigModel {
-    pub fn new(template_path: &str, first_run: bool, repo_path: &str) -> ConfigModel {
+    pub fn new(
+        template_path: &str,
+        first_run: bool,
+        repo_path: &str,
+        templates_name: Vec<String>,
+    ) -> ConfigModel {
         ConfigModel {
             first_run: first_run,
             template_path: path::PathBuf::from(template_path),
             repo_path: repo_path.to_string(),
+            templates_name,
         }
     }
 

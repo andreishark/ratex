@@ -33,7 +33,8 @@ fn init_json_file(
     template_name: &str,
     default_repo: &str,
 ) -> Result<models::ConfigModel, io::Error> {
-    let mut config_model = models::ConfigModel::new(&template_name.to_owned(), true, default_repo);
+    let mut config_model =
+        models::ConfigModel::new(&template_name.to_owned(), true, default_repo, vec![]);
     config_model.first_init(template_name, default_repo)?;
 
     update_json_file(&config_model, json_path)?;
@@ -73,6 +74,7 @@ pub fn parse_json_file(
                 .expect("Unexpected error occured"),
             config_model.first_run,
             default_repo,
+            vec![],
         );
 
         changed = true;
@@ -90,7 +92,7 @@ pub fn parse_json_file(
         match fs::create_dir(&file_path) {
             Ok(_) => {}
             Err(err) => {
-                if (err.kind() == io::ErrorKind::AlreadyExists) {
+                if err.kind() == io::ErrorKind::AlreadyExists {
                     dbg!("Template directory already exists");
                 } else {
                     return Err(err);
@@ -102,6 +104,7 @@ pub fn parse_json_file(
             new_template_path.to_str().expect("Unexpected error"),
             true,
             &config_model.repo_path,
+            vec![],
         );
 
         changed = true;
@@ -116,6 +119,7 @@ pub fn parse_json_file(
                 .expect("Unexpected error occured"),
             true,
             &config_model.repo_path,
+            vec![],
         );
 
         init_json_file(
