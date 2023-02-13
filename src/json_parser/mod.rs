@@ -110,7 +110,7 @@ pub fn parse_json_file(
         changed = true;
     }
 
-    if config_model.first_run {
+    if !config_model.first_run {
         dbg!("First run, updating json file");
         config_model = models::ConfigModel::new(
             config_model

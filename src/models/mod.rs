@@ -42,7 +42,16 @@ impl ConfigModel {
         self.first_run = true;
         let file_path = json_parser::get_exec_path(template_name)?;
 
-        fs::create_dir(&file_path)?;
+        match fs::create_dir(&file_path) {
+            Ok(_) => todo!(),
+            Err(err) => {
+                if err.kind() == io::ErrorKind::AlreadyExists {
+                    dbg!("Directory already exists. Skipping creation");
+                } else {
+                    return Err(err);
+                }
+            }
+        };
 
         self.template_path = file_path;
         self.repo_path = default_repo.to_string();
